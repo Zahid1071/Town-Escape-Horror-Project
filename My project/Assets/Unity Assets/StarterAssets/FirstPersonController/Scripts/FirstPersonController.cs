@@ -119,7 +119,7 @@ namespace StarterAssets
 
 		private void LateUpdate()
 		{
-			CameraRotation();
+			//CameraRotation();
 		}
 
 		private void GroundedCheck()
