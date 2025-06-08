@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24531184c746449478f100b14a7d09e5, type: 3}
+  m_Name: Test NPC Data
+  m_EditorClassIdentifier: 
+  npcName: Joe
+  npcPrefab: {fileID: 4884186263421869, guid: 9c0bee0b90b73ca45b439d3bf212e837, type: 3}
+  homeID: House_001_Zone
+  isInfected: 0
+  infectionLevel: 0
+  itemsTheyHave: []
+  itemsTheyWant: []
+  weightedRoutinePlans:
+  - zoneID: House_001_Zone
+    weight: 0.4
+    roomPlans:
+    - roomAnchorID: Living Room_Trigger
+      weight: 0.5
+      hotspots:
+      - hotspotID: Hotspot_001
+        weight: 0.3
+        duration: 2
+      - hotspotID: Hotspot_002
+        weight: 0.4
+        duration: 2
+      - hotspotID: Hotspot_003
+        weight: 0.5
+        duration: 2
+  - zoneID: Shop_001_Zone
+    weight: 0.3
+    roomPlans:
+    - roomAnchorID: Main Room_Trigger
+      weight: 0.1
+      hotspots:
+      - hotspotID: Check Counter_001_Hotspot
+        weight: 0.601
+        duration: 2
+      - hotspotID: Look out the Window_001_Hotspot
+        weight: 0.4
+        duration: 2
+      - hotspotID: Check counter_002_Hotspot
+        weight: 0.5
+        duration: 2
+  dialogueLines: []
