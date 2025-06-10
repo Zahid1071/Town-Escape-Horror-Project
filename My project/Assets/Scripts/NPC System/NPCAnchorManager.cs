@@ -29,7 +29,7 @@ public class NPCAnchorManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"Duplicate anchor name found: {t.name}");
+                    //Debug.LogWarning($"Duplicate anchor name found: {t.name}");
                 }
             }
         }

@@ -14,6 +14,9 @@ public class NPCData : ScriptableObject
     public bool isInfected = false;
     public float infectionLevel = 0f;
 
+    [Range(0f, 1f)] public float searchChance = 0.3f;      // base chance
+    [Range(0f, 1f)] public float maxSearchChance = 0.8f;
+
     public List<InventoryItem> itemsTheyHave;
     public List<InventoryItem> itemsTheyWant;
 
