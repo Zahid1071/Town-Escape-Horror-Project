@@ -15,15 +15,17 @@ MonoBehaviour:
   npcName: Joe
   npcPrefab: {fileID: 4884186263421869, guid: 9c0bee0b90b73ca45b439d3bf212e837, type: 3}
   homeID: House_001_Zone
-  isInfected: 0
+  isInfected: 1
   infectionLevel: 0
+  searchChance: 0.3
+  maxSearchChance: 0.8
   itemsTheyHave: []
   itemsTheyWant: []
   weightedRoutinePlans:
   - zoneID: House_001_Zone
     weight: 0.4
     roomPlans:
-    - roomAnchorID: Living Room_Trigger
+    - roomAnchorID: Living Room_Anchor
       weight: 0.5
       hotspots:
       - hotspotID: Hotspot_001
