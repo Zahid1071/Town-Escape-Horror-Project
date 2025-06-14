@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 2588451862027541027}
   - component: {fileID: 1469066018935350255}
   - component: {fileID: 4052662691887626456}
+  - component: {fileID: 3090453657295839001}
+  - component: {fileID: 72859471452438870}
+  - component: {fileID: 1394322090321949160}
   m_Layer: 0
   m_Name: Joe_NPC
   m_TagString: Untagged
@@ -46,14 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35f82d0d1465df14796729031174e26a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: 07bec62dd6b41d340a5bf13fa98c14ad, type: 2}
-  agent: {fileID: 4052662691887626456}
-  animator: {fileID: 4113883170351813888}
   currentState: 0
-  currentBehavior: 0
-  remainHomeFactor: 3
-  player: {fileID: 0}
-  searchPointWaitTime: 1.5
 --- !u!195 &4052662691887626456
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -63,8 +59,8 @@ NavMeshAgent:
   m_GameObject: {fileID: 4884186263421869}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 2.7
+  m_Radius: 0.2
+  m_Speed: 2.5
   m_Acceleration: 12
   avoidancePriority: 50
   m_AngularSpeed: 240
@@ -76,6 +72,51 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &3090453657295839001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4884186263421869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a1f5cb1b15d574ab7ae0e947588208, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &72859471452438870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4884186263421869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3539c4454bb23f4aa0079298e939661, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  viewDistance: 10
+  viewAngle: 90
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  player: {fileID: 0}
+--- !u!114 &1394322090321949160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4884186263421869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f663f69b97e40ad4590254ab9ed9f41f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  suspicionLevel: 0
+  suspicionThreshold: 100
+  decayRate: 5
 --- !u!1001 &7529428532268083345
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -165,11 +206,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c1bffa5090551f4f8cc4d7b3b633dd8, type: 3}
---- !u!95 &4113883170351813888 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 1c1bffa5090551f4f8cc4d7b3b633dd8, type: 3}
-  m_PrefabInstance: {fileID: 7529428532268083345}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8068020779007790970 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1c1bffa5090551f4f8cc4d7b3b633dd8, type: 3}
