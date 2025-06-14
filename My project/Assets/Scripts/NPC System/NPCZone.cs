@@ -20,7 +20,7 @@ public class NPCZone : MonoBehaviour
         if (ownerNPC != null)
         {
             ownerNPC.currentBehavior = NPCController.BehaviorState.Suspicious;
-            ownerNPC.InterruptRoutine();
+            ownerNPC.CancelHotspotAction();
             Debug.Log($"🚨 {ownerNPC.data.npcName} is now suspicious (player entered {houseID})");
         }
     }
