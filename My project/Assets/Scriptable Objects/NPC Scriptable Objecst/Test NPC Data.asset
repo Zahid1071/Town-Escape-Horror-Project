@@ -28,28 +28,12 @@ MonoBehaviour:
     - roomAnchorID: Living Room_Anchor
       weight: 0.5
       hotspots:
-      - hotspotID: Hotspot_001
-        weight: 0.3
-        duration: 2
-      - hotspotID: Hotspot_002
-        weight: 0.4
-        duration: 2
-      - hotspotID: Hotspot_003
-        weight: 0.5
-        duration: 2
-  - zoneID: Shop_001_Zone
-    weight: 0.3
-    roomPlans:
-    - roomAnchorID: Main Room_Trigger
-      weight: 0.1
-      hotspots:
-      - hotspotID: Check Counter_001_Hotspot
-        weight: 0.601
-        duration: 2
-      - hotspotID: Look out the Window_001_Hotspot
-        weight: 0.4
-        duration: 2
-      - hotspotID: Check counter_002_Hotspot
-        weight: 0.5
-        duration: 2
+      - hotspotID: Hotspot_Sofa
+        weight: 0.1
+        duration: 15
+        actionType: 1
+      - hotspotID: Hotspot_Stool
+        weight: 0.1
+        duration: 10
+        actionType: 1
   dialogueLines: []
