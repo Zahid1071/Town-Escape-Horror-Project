@@ -2,12 +2,15 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System;
+using Unity.VisualScripting;
 
 public class FSMController
 {
     private NPCController npc;
 
-    private float searchTimer = 0f;
+    public float walkingSpeed = 2.5f;
+    public float runningSpeed = 4.5f;
+
 
     public FSMController(NPCController controller)
     {
@@ -23,28 +26,33 @@ public class FSMController
         {
             npc.StartCoroutine(SearchRoutine());
         }
+        else if (newState == NPCController.AIState.Natural)
+        {
+            npc.interaction.StartNextRoutine(); // 🔥 force resume routine
+        }
     }
-
-
-
 
     public void Update()
     {
         switch (npc.currentState)
         {
             case NPCController.AIState.Natural:
-                if (!npc.interaction.IsInteracting())
+
+                npc.GetComponent<NavMeshAgent>().speed = walkingSpeed;
+                if (!npc.interaction.IsBusyWithRoutine())
                     npc.interaction.StartNextRoutine();
                 break;
 
 
             case NPCController.AIState.Suspicious:
+                npc.GetComponent<NavMeshAgent>().speed = runningSpeed;
                 MoveToSuspiciousTarget();
                 break;
             case NPCController.AIState.Search:
-                SearchRoom();
+                npc.GetComponent<NavMeshAgent>().speed = walkingSpeed+((runningSpeed-walkingSpeed)/3);
                 break;
             case NPCController.AIState.Chase:
+                npc.GetComponent<NavMeshAgent>().speed = runningSpeed;
                 ChasePlayer();
                 break;
             case NPCController.AIState.Capture:
@@ -56,17 +64,23 @@ public class FSMController
 
     private void ChasePlayer()
     {
-        if (npc.perception.player == null)
-            return;
-
-        npc.GetComponent<UnityEngine.AI.NavMeshAgent>().SetDestination(npc.perception.player.position);
-
-        float distance = Vector3.Distance(npc.transform.position, npc.perception.player.position);
-        if (distance < 1.5f) // capture range
+        if (!npc.perception.CanSeePlayer)
         {
-            npc.fsm.SetState(NPCController.AIState.Capture);
+            // Player lost — become suspicious and move to last known position
+            npc.perception.searchTarget = null; // clear old anchor
+            npc.fsm.SetState(NPCController.AIState.Suspicious);
+            return;
+        }
+
+        Vector3 playerPos = npc.perception.player.position;
+        npc.GetComponent<NavMeshAgent>().SetDestination(playerPos);
+
+        if (Vector3.Distance(npc.transform.position, playerPos) < 1.5f)
+        {
+            //npc.fsm.SetState(NPCController.AIState.Capture);
         }
     }
+
 
 
     private void CapturePlayer()
@@ -78,37 +92,33 @@ public class FSMController
 
     private void MoveToSuspiciousTarget()
     {
-        if (npc.perception.searchTarget == null)
-        {
-            npc.fsm.SetState(NPCController.AIState.Natural);
-            return;
-        }
+        Vector3 targetPosition = npc.perception.LastKnownPlayerPosition;
+        npc.GetComponent<NavMeshAgent>().SetDestination(targetPosition);
 
-        npc.GetComponent<UnityEngine.AI.NavMeshAgent>().SetDestination(npc.perception.searchTarget.position);
-
-        if (!npc.GetComponent<UnityEngine.AI.NavMeshAgent>().pathPending && npc.GetComponent<UnityEngine.AI.NavMeshAgent>().remainingDistance < 0.3f)
+        if (!npc.GetComponent<NavMeshAgent>().pathPending &&
+            npc.GetComponent<NavMeshAgent>().remainingDistance < 0.3f)
         {
-            npc.fsm.SetState(NPCController.AIState.Search);
-        }
-    }
+            string homeZone = npc.interaction.data.homeID;
 
-    private void SearchRoom()
-    {
-        // TEMP simple search: stand still & wait
+            Transform anchor = NPCAnchorManager.Instance.FindClosestOwnedAnchor(targetPosition,10f,homeZone);
 
-        if (searchTimer <= 0f)
-        {
-            Debug.Log("Finished searching.");
-            npc.fsm.SetState(NPCController.AIState.Natural);
-        }
-        else
-        {
-            searchTimer -= Time.deltaTime;
+            if (anchor != null)
+            {
+                npc.perception.searchTarget = anchor;
+                npc.fsm.SetState(NPCController.AIState.Search);
+            }
+            else
+            {
+                Debug.Log("No valid anchor near last seen player position. Returning to Natural.");
+                npc.fsm.SetState(NPCController.AIState.Natural);
+            }
         }
     }
 
     private IEnumerator SearchRoutine()
     {
+
+        yield return new WaitForSeconds(2);
         Transform roomAnchor = npc.perception.searchTarget;
 
         if (roomAnchor == null)
@@ -117,27 +127,46 @@ public class FSMController
             yield break;
         }
 
-        // Move to room first
-        npc.GetComponent<UnityEngine.AI.NavMeshAgent>().SetDestination(roomAnchor.position);
-        yield return new WaitUntil(() => !npc.GetComponent<UnityEngine.AI.NavMeshAgent>().pathPending && npc.GetComponent<UnityEngine.AI.NavMeshAgent>().remainingDistance < 0.3f);
+        yield return new WaitUntil(() =>
+            !npc.GetComponent<NavMeshAgent>().pathPending &&
+            npc.GetComponent<NavMeshAgent>().remainingDistance < 0.3f);
 
-        Debug.Log("Arrived at search room");
 
-        // Search hiding spots (optional)
+        // Get all hiding spots
         var hidingSpots = roomAnchor.GetComponentsInChildren<HidingSpot>();
 
         foreach (var spot in hidingSpots)
         {
-            npc.GetComponent<UnityEngine.AI.NavMeshAgent>().SetDestination(spot.transform.position);
-            yield return new WaitUntil(() => !npc.GetComponent<UnityEngine.AI.NavMeshAgent>().pathPending && npc.GetComponent<UnityEngine.AI.NavMeshAgent>().remainingDistance < 0.3f);
+            // If player is seen mid-search — switch to chase
+            if (npc.perception.CanSeePlayer)
+            {
+                npc.fsm.SetState(NPCController.AIState.Chase);
+                yield break;
+            }
 
-            Debug.Log($"Checking hiding spot: {spot.name}");
+            npc.GetComponent<NavMeshAgent>().SetDestination(spot.transform.position);
+            yield return new WaitUntil(() =>
+                !npc.GetComponent<NavMeshAgent>().pathPending &&
+                npc.GetComponent<NavMeshAgent>().remainingDistance < 0.3f);
+
+
+
+            if (spot.isOccupied == true)
+            {
+                Debug.Log($"Player Cought in: {spot.name}");
+            }
+            else
+            {
+                Debug.Log($"Nothing found in: {spot.name}");
+            }
+            
             yield return new WaitForSeconds(1f);
         }
 
-        Debug.Log("Finished searching");
+        Debug.Log("Player not found. Returning to routine.");
         npc.fsm.SetState(NPCController.AIState.Natural);
     }
+
 
 
 

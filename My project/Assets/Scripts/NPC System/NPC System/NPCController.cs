@@ -43,19 +43,19 @@ public class NPCController : MonoBehaviour
 
     private void HandlePlayerSeen()
     {
+        interaction.CancelInteraction();
         fsm.SetState(AIState.Chase);
     }
 
     private void HandlePlayerHeard()
     {
-        suspicion.AddSuspicion(20f);
+        if (currentState == AIState.Chase || currentState == AIState.Capture)
+            return;
 
-        if (suspicion.suspicionLevel >= suspicion.suspicionThreshold)
-        {
-            interaction.CancelInteraction();
-            fsm.SetState(AIState.Suspicious);
-        }
+        interaction.CancelInteraction(); // Cancel if already interacting
+        suspicion.AddSuspicion(20f);     // System will fire threshold event if needed
     }
+
 
 
     private void HandleSuspicionReached()

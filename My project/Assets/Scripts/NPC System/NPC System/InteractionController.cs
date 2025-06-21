@@ -24,14 +24,56 @@ public class InteractionController : MonoBehaviour
 
     public MovementState currentMovementState;
 
+    private Animator animator;
+
+    private float animSpeed;
+
+
+
+    void Awake()
+    {
+        animator = GetComponentInChildren<Animator>();
+    }
 
     void Update()
     {
-        if (agent.pathPending || agent.remainingDistance > 0.1f)
-            currentMovementState = MovementState.Walking;
-        else
-            currentMovementState = MovementState.Idle;
+        SetCurrentMovementState();
+        UpdateAnimation();
+
     }
+
+
+    private void SetCurrentMovementState()
+    {
+        float velocity = agent.velocity.magnitude;
+
+        if (agent.pathPending || agent.remainingDistance > 0.1f)
+        {
+            if (velocity > 2.5f + 0.1f) // small buffer to prevent flickering
+                currentMovementState = MovementState.Running;
+            else
+                currentMovementState = MovementState.Walking;
+        }
+        else
+        {
+            currentMovementState = MovementState.Idle;
+        }
+    }
+
+
+
+    private void UpdateAnimation()
+    {
+
+        if (animator == null || agent == null) return;
+        
+        float targetSpeed = agent.velocity.magnitude;
+        animSpeed = Mathf.Lerp(animSpeed, targetSpeed, Time.deltaTime * 8f);
+        animator.SetFloat("Speed", animSpeed);
+       
+    }
+
+    
 
     public void StartNextRoutine()
     {
@@ -86,11 +128,13 @@ public class InteractionController : MonoBehaviour
 
     private IEnumerator WaitForArrival(Transform hotspotTransform)
     {
+
         while (agent.pathPending || agent.remainingDistance > 0.2f)
             yield return null;
 
         StartInteraction(currentHotspot);
     }
+
 
     public void StartInteraction(WeightedHotspot hotspot)
     {
@@ -104,30 +148,65 @@ public class InteractionController : MonoBehaviour
     {
         if (interactionRoutine != null)
             StopCoroutine(interactionRoutine);
+
+        interactionRoutine = null;
     }
+
 
     private IEnumerator PerformInteraction(WeightedHotspot hotspot)
     {
-        // Entry interpolation here (reimplement your old smooth sit entry)
 
-        // Play animation based on hotspot type
+        Transform anchor = NPCAnchorManager.Instance.GetAnchor(hotspot.hotspotID);
+        if (anchor != null)
+        {
+            float t = 0f;
+            float duration = 0.4f;
+            Vector3 startPos = transform.position;
+            Quaternion startRot = transform.rotation;
+
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                transform.position = Vector3.Lerp(startPos, anchor.position, t / duration);
+                transform.rotation = Quaternion.Slerp(startRot, anchor.rotation, t / duration);
+                yield return null;
+            }
+
+            transform.position = anchor.position;
+            transform.rotation = anchor.rotation;
+        }
+
         PlayHotspotAnimation(hotspot);
-
         yield return new WaitForSeconds(hotspot.duration);
-
-        // Exit interpolation here (reimplement your old smooth exit)
-
-        // Automatically start next routine after interaction
         StartNextRoutine();
     }
 
+
     private void PlayHotspotAnimation(WeightedHotspot hotspot)
     {
-        // TEMP: Hook up your real animation triggers later
+        if (animator == null) return;
+
+        switch (hotspot.actionType)
+        {
+            case HotspotAction.ActionType.Sit:
+                animator.SetTrigger("Sit");
+                break;
+            case HotspotAction.ActionType.WatchTV:
+                animator.SetTrigger("WatchTV");
+                break;
+            case HotspotAction.ActionType.Nap:
+                animator.SetTrigger("Nap");
+                break;
+            default:
+                Debug.LogWarning($"No animation mapped for: {hotspot.actionType}");
+                break;
+        }
+
         Debug.Log($"Playing interaction: {hotspot.actionType}");
     }
 
-    public bool IsInteracting()
+
+    public bool IsBusyWithRoutine()
     {
         return interactionRoutine != null;
     }

@@ -14,13 +14,20 @@ public class SuspicionSystem : MonoBehaviour
     private void Update()
     {
         if (suspicionLevel > 0)
+        {
             suspicionLevel -= decayRate * Time.deltaTime;
+            suspicionLevel = Mathf.Clamp(suspicionLevel, 0f, suspicionThreshold);
+        }
     }
 
     public void AddSuspicion(float amount)
     {
         suspicionLevel += amount;
+
         if (suspicionLevel >= suspicionThreshold)
+        {
+            suspicionLevel = suspicionThreshold;
             OnSuspicionThresholdReached?.Invoke();
+        }
     }
 }
